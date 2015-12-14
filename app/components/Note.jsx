@@ -1,17 +1,33 @@
 import React from 'react';
+import { DragSource, DropTarget } from 'react-dnd';
+import ItemTypes from '../constants/itemTypes';
 
-export default class Note extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      editing: false
-    };
+const noteSource = {
+  beginDrag(props) {
+    console.log('Begin dragging note', props);
+    return {};
   }
+};
+
+const noteTarget = {
+  hover(targetProps, monitor) {
+    const sourceProps = monitor.getItem();
+    console.log('dragging note', sourceProps, targetProps);
+  }
+};
+
+@DragSource(ItemTypes.NOTE, noteSource, (connect) => ({
+  connectDragSource: connect.dragSource()
+}))
+@DropTarget(ItemTypes.NOTE, noteTarget, (connect) => ({
+  connectDropTarget: connect.dropTarget()
+}))
+export default class Note extends React.Component {
   render() {
-    if (this.state.editing) {
-      return this.renderEdit();
-    }
-    return this.renderNote();
+    const {connectDragSource, connectDropTarget, id, onMove, ...props} = this.props;
+    return connectDragSource(connectDropTarget(
+      <li {...this.props}>{this.props.children}</li>
+    ));
   }
   renderEdit = () => {
     return <input type="text"
